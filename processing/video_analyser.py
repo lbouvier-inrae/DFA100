@@ -26,9 +26,10 @@ def analyse_video(path_to_video, fps_results=1):
             break
         
         if frame_index % frame_step == 0:
-            results.append(analyse_image(frame))
-            results[-1]["frame"] = frame_index + 1
-            results[-1]["number"] = len(results)
+            result = analyse_image(frame)
+            temps = frame_index / fps_video
+            result["temps"] = round(temps, 3)
+            results.append(result)
         
         frame_index += 1
     cap.release()
