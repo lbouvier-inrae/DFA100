@@ -18,8 +18,8 @@ def analyse_image(frame):
     
     return {
         "nb_bulles": nb_bulles,
-        "moyenne": moyenne,
-        "ecart_type": ecart_type
+        "surface_moyenne[px]": moyenne,
+        "ecart_type[px]": ecart_type
         }
     
     
