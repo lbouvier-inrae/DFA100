@@ -31,6 +31,7 @@ class VideoAnalyzerUI(QWidget):
         self.name_experience_label = QLabel("Nom de l'expérience :")
         self.name_experience_input = QLineEdit("")
         self.name_experience_input.setPlaceholderText("lait")
+        self.name_experience_input.textChanged.connect(self.update_result_filename)
         
         name_experience_box = QHBoxLayout()
         name_experience_box.addWidget(self.name_experience_label)
@@ -41,6 +42,7 @@ class VideoAnalyzerUI(QWidget):
         # Selecteur de la date
         self.date_label = QLabel("Date de l'expérience :")
         self.date_selector = QDateEdit(QDate.currentDate())
+        self.date_selector.dateChanged.connect(self.update_result_filename)
         
         date_box = QHBoxLayout()
         date_box.addWidget(self.date_label)
@@ -70,7 +72,7 @@ class VideoAnalyzerUI(QWidget):
         # Label et Input pour le nom de la video
         self.name_result_label = QLabel("Nom du fichier de résultat :")
         self.name_result_input = QLineEdit("")
-        self.name_result_input.setPlaceholderText("resultat.csv")
+        self.name_result_input.setPlaceholderText("resultat.xlsx")
         
         name_result_box = QHBoxLayout()
         name_result_box.addWidget(self.name_result_label)
@@ -91,13 +93,17 @@ class VideoAnalyzerUI(QWidget):
             stat = os.stat(self.file_path)
             self.date_selector.setDate(datetime.fromtimestamp(stat.st_birthtime))
             self.name_experience_input.setText(Path(self.file_path).stem)
-            date_str = self.date_selector.date().toString("yyyy_MM_dd")
-            self.name_result_input.setText(f"{self.name_experience_input.text()}_{date_str}.xlsx")
+            self.update_result_filename
 
     def analyze_video(self):
         results = analyse_video(self.file_path, self.fps_slider.value()/10)
         df = pd.DataFrame(results)
         df.to_excel(f"assets/results/{self.name_result_input.text()}", index=False)
+
+    def update_result_filename(self):
+        date_str = self.date_selector.date().toString("yyyy_MM_dd")
+        name = self.name_experience_input.text().strip() or "experience"
+        self.name_result_input.setText(f"{name}_{date_str}.xlsx")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
