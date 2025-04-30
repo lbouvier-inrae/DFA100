@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from image_analyser import analyse_image
+from processing.image_analyser import analyse_image
 
 def analyse_video(path_to_video, fps_results=1):
     cap = cv2.VideoCapture(path_to_video)
