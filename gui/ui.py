@@ -1,13 +1,15 @@
 import sys
 import os
 from datetime import datetime
+from pathlib import Path
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel,
     QPushButton, QFileDialog, QSlider, QHBoxLayout,
     QLineEdit, QDateEdit
 )
+import pandas as pd
 from PySide6.QtCore import (Qt, QDate)
-
+from processing.video_analyser import analyse_video
 
 class VideoAnalyzerUI(QWidget):
     def __init__(self):
@@ -84,15 +86,18 @@ class VideoAnalyzerUI(QWidget):
         self.setLayout(layout)
 
     def load_video(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Choisir une vidéo", "", "Videos (*.avi *.mp4)")
-        if file_path:
-            stat = os.stat(file_path)
+        self.file_path, _ = QFileDialog.getOpenFileName(self, "Choisir une vidéo", "", "Videos (*.avi *.mp4)")
+        if self.file_path:
+            stat = os.stat(self.file_path)
             self.date_selector.setDate(datetime.fromtimestamp(stat.st_birthtime))
-            self.name_experience_input.setText(os.path.basename(file_path))
+            self.name_experience_input.setText(Path(self.file_path).stem)
+            date_str = self.date_selector.date().toString("yyyy_MM_dd")
+            self.name_result_input.setText(f"{self.name_experience_input.text()}_{date_str}.xlsx")
 
     def analyze_video(self):
-        # TODO: lancer le traitement de la vidéo
-        pass
+        results = analyse_video(self.file_path, self.fps_slider.value()/10)
+        df = pd.DataFrame(results)
+        df.to_excel(f"assets/results/{self.name_result_input.text()}", index=False)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
