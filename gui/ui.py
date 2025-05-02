@@ -95,7 +95,9 @@ class VideoAnalyzerUI(QWidget):
         self.analyze_button.clicked.connect(self.analyze_video)
         layout.addWidget(self.analyze_button)
         
+        # Bouton de status
         self.status_label = QLabel("Prêt")
+        self.status_label.setFixedHeight(20)
         layout.addWidget(self.status_label)
 
 
