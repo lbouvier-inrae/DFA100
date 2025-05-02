@@ -50,6 +50,14 @@ class VideoAnalyzerUI(QWidget):
         
         layout.addLayout(date_box)
         
+        # Sélecteur de fichier Excel machine
+        self.excel_button = QPushButton("Charger les paramètres machine (Excel)")
+        self.excel_button.clicked.connect(self.load_excel)
+        layout.addWidget(self.excel_button)
+
+        self.excel_path = None  # Pour stocker le chemin
+
+        
         # Slider pour le nombre d'images par seconde analysées
         slider_layout = QHBoxLayout()
         self.fps_slider = QSlider(Qt.Horizontal)
@@ -69,7 +77,7 @@ class VideoAnalyzerUI(QWidget):
         layout.addLayout(slider_layout)
         
         
-        # Label et Input pour le nom de la video
+        # Label et Input pour le nom du fichier resultat
         self.name_result_label = QLabel("Nom du fichier de résultat :")
         self.name_result_input = QLineEdit("")
         self.name_result_input.setPlaceholderText("resultat.xlsx")
@@ -98,12 +106,37 @@ class VideoAnalyzerUI(QWidget):
     def analyze_video(self):
         results = analyse_video(self.file_path, self.fps_slider.value()/10)
         df = pd.DataFrame(results)
-        df.to_excel(f"assets/results/{self.name_result_input.text()}", index=False)
+        
+        result_path = f"assets/results/{self.name_result_input.text()}"
+        
+        df.to_excel(result_path, index=False)
+        if self.machine_excel_path:
+            self.ajouter_parametres_machine(result_path, self.machine_excel_path)
 
     def update_result_filename(self):
         date_str = self.date_selector.date().toString("yyyy_MM_dd")
         name = self.name_experience_input.text().strip() or "experience"
         self.name_result_input.setText(f"{name}_{date_str}.xlsx")
+        
+    def load_excel(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Choisir un fichier Excel", "", "Excel Files (*.xlsx *.xls)")
+        if path:
+            self.machine_excel_path = path
+
+    def ajouter_parametres_machine(self, fichier_resultat, fichier_excel):
+        if not fichier_excel:
+            return
+        
+        # Lire toutes les feuilles
+        xls = pd.ExcelFile(fichier_excel)
+        last_sheet = xls.sheet_names[-1]
+        df_params = xls.parse(last_sheet)
+
+        # Ajouter la feuille à ton fichier résultat
+        with pd.ExcelWriter(fichier_resultat, mode='a', engine='openpyxl') as writer:
+            df_params.to_excel(writer, sheet_name='Paramètres machine', index=False)
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
