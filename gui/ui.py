@@ -20,6 +20,8 @@ class VideoAnalyzerUI(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        self.machine_excel_path = False
+        
         layout = QVBoxLayout()
         
         # Bouton pour charger une video
@@ -92,6 +94,10 @@ class VideoAnalyzerUI(QWidget):
         self.analyze_button = QPushButton("Lancer l’analyse")
         self.analyze_button.clicked.connect(self.analyze_video)
         layout.addWidget(self.analyze_button)
+        
+        self.status_label = QLabel("Prêt")
+        layout.addWidget(self.status_label)
+
 
         self.setLayout(layout)
 
@@ -104,6 +110,9 @@ class VideoAnalyzerUI(QWidget):
             self.update_result_filename
 
     def analyze_video(self):
+        self.status_label.setText("Analyse en cours...")
+        QApplication.processEvents()
+        
         results = analyse_video(self.file_path, self.fps_slider.value()/10)
         df = pd.DataFrame(results)
         
@@ -112,6 +121,8 @@ class VideoAnalyzerUI(QWidget):
         df.to_excel(result_path, index=False)
         if self.machine_excel_path:
             self.ajouter_parametres_machine(result_path, self.machine_excel_path)
+        
+        self.status_label.setText("Analyse terminée")
 
     def update_result_filename(self):
         date_str = self.date_selector.date().toString("yyyy_MM_dd")
