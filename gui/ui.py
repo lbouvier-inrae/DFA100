@@ -93,6 +93,7 @@ class VideoAnalyzerUI(QWidget):
         # Bouton de lancement de l'analyse
         self.analyze_button = QPushButton("Lancer l’analyse")
         self.analyze_button.clicked.connect(self.analyze_video)
+        self.analyze_button.setEnabled(False)
         layout.addWidget(self.analyze_button)
         
         # Bouton de status
@@ -110,6 +111,7 @@ class VideoAnalyzerUI(QWidget):
             self.date_selector.setDate(datetime.fromtimestamp(stat.st_birthtime))
             self.name_experience_input.setText(Path(self.file_path).stem)
             self.update_result_filename
+            self.analyze_button.setEnabled(True)
 
     def analyze_video(self):
         self.status_label.setText("Analyse en cours...")
