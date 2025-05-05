@@ -2,10 +2,12 @@ import cv2
 import numpy as np
 from skimage.filters import threshold_otsu
 
-def analyse_image(frame):
+def analyse_image(frame, scale=1):
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
     threshold = threshold_otsu(gray_frame)
+    print(threshold)
+    threshold = 2
     
     _, thresh = cv2.threshold(gray_frame, threshold, 255, cv2.THRESH_BINARY)
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -21,12 +23,10 @@ def analyse_image(frame):
         "surface_moyenne[px]": moyenne,
         "ecart_type[px]": ecart_type
         }
-    
-    
 
 
 if __name__=="__main__":
-    image = cv2.imread("assets/test/im_1.png")
+    image = cv2.imread("assets/results/frame/image_0005.png")
     result = analyse_image(image)
     result["frame"] = 1
     print(result)

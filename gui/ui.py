@@ -78,6 +78,15 @@ class VideoAnalyzerUI(QWidget):
         slider_layout.addWidget(self.fps_slider)
         layout.addLayout(slider_layout)
         
+        # Section pour définir l'échelle (pixels -> cm)
+        # scale_box = QHBoxLayout()
+        # self.scale_label = QLabel("Échelle (pixels pour 1 cm) :")
+        # self.scale_input = QLineEdit()
+        # self.scale_input.setPlaceholderText("Ex: 50")
+        # scale_box.addWidget(self.scale_label)
+        # scale_box.addWidget(self.scale_input)
+        # layout.addLayout(scale_box)
+        
         
         # Label et Input pour le nom du fichier resultat
         self.name_result_label = QLabel("Nom du fichier de résultat :")

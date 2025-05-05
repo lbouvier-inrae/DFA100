@@ -1,8 +1,9 @@
+import os
 import cv2
 import numpy as np
 from processing.image_analyser import analyse_image
 
-def analyse_video(path_to_video, fps_results=1):
+def analyse_video(path_to_video, fps_results=1, scale=1):
     cap = cv2.VideoCapture(path_to_video)
     
     fps_video = cap.get(cv2.CAP_PROP_FPS)
@@ -19,6 +20,7 @@ def analyse_video(path_to_video, fps_results=1):
     results = []
     
     frame_index = 0
+    image_index = 0
     
     while cap.isOpened():
         ret, frame = cap.read()
@@ -26,10 +28,14 @@ def analyse_video(path_to_video, fps_results=1):
             break
         
         if frame_index % frame_step == 0:
-            result = analyse_image(frame)
+            result = analyse_image(frame, scale)
             temps = frame_index / fps_video
             result["temps"] = round(temps, 3)
             results.append(result)
+            
+            image_filename = os.path.join("assets/results/frame", f"image_{image_index:04d}.png")  # Formatage pour numéro d'image
+            cv2.imwrite(image_filename, frame)
+            image_index += 1
         
         frame_index += 1
     cap.release()
