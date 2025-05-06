@@ -125,17 +125,22 @@ class VideoAnalyzerUI(QWidget):
     def analyze_video(self):
         self.status_label.setText("Analyse en cours...")
         QApplication.processEvents()
-        
-        results = analyse_video(self.file_path, self.fps_slider.value()/10)
+
+        results = self.process_video()
+        self.export_results(results)
+
+        self.status_label.setText("Analyse terminée")
+
+    def process_video(self):
+        return analyse_video(self.file_path, self.fps_slider.value() / 10)
+
+    def export_results(self, results):
         df = pd.DataFrame(results)
-        
         result_path = f"assets/results/{self.name_result_input.text()}"
-        
         df.to_excel(result_path, index=False)
+
         if self.machine_excel_path:
             self.ajouter_parametres_machine(result_path, self.machine_excel_path)
-        
-        self.status_label.setText("Analyse terminée")
 
     def update_result_filename(self):
         date_str = self.date_selector.date().toString("yyyy_MM_dd")
