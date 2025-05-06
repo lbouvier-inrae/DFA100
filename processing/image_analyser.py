@@ -44,8 +44,8 @@ def analyse_image(frame: np.ndarray, scale: float = 1.0) -> Dict[str, float]:
     areas = extract_contour_areas(binary)
 
     nb_bulles = len(areas)
-    moyenne = np.mean(areas) if areas else 0.0
-    ecart_type = np.std(areas) if areas else 0.0
+    moyenne = float(np.mean(areas)) if areas else 0.0
+    ecart_type = float(np.std(areas)) if areas else 0.0
 
     return {
         "nb_bulles": nb_bulles,
