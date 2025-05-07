@@ -35,25 +35,25 @@ def analyse_image(frame: np.ndarray, scale: float = 1.0) -> Dict[str, float]:
     gray = convert_to_grayscale(frame)
     threshold = threshold_otsu(gray)
     
-    # Pour le développement, seuil fixe (temporaire)
-    threshold = 2  
+    _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
-    binary = binarize_image(gray, threshold)
-    areas = extract_contour_areas(binary)
+    areas_px = [cv2.contourArea(c) for c in contours]
+    scale_factor = (1 / (scale ** 2)) if scale > 0 else 1
+    areas_cm = [a * scale_factor for a in areas_px]
 
-    nb_bulles = len(areas)
-    moyenne = float(np.mean(areas)) if areas else 0.0
-    ecart_type = float(np.std(areas)) if areas else 0.0
+    nb_bulles = len(areas_cm)
+    moyenne = float(np.average(areas_cm)) if areas_cm else 0.0
+    ecart_type = float(np.std(areas_cm)) if areas_cm else 0.0
 
     return {
         "nb_bulles": nb_bulles,
-        "surface_moyenne[px]": moyenne,
-        "ecart_type[px]": ecart_type
+        "surface_moyenne[cm²]": moyenne,
+        "ecart_type[cm²]": ecart_type
     }
 
 
 if __name__ == "__main__":
-    image = cv2.imread("assets/results/frame/image_0005.png")
-    result = analyse_image(image)
-    result["frame"] = 1
+    image = cv2.imread("assets/test/im_1.png")
+    result = analyse_image(image, 3)
     print(result)

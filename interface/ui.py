@@ -45,6 +45,17 @@ class VideoAnalyzerUI(QWidget):
         self.date_selector.dateChanged.connect(self.validate_inputs)
         layout.addWidget(QLabel("Date de l'expérience :"))
         layout.addWidget(self.date_selector)
+        
+        # Section pour définir l'échelle (pixels pour 1 cm)
+        scale_box = QHBoxLayout()
+        self.scale_label = QLabel("Échelle (px/cm) :")
+        self.scale_input = QLineEdit()
+        self.scale_input.setPlaceholderText("Ex: 50")
+        self.scale_input.textChanged.connect(self.validate_inputs)
+
+        scale_box.addWidget(self.scale_label)
+        scale_box.addWidget(self.scale_input)
+        layout.addLayout(scale_box)
 
         # Chargement des paramètres machine
         self.excel_button = QPushButton("Charger les paramètres machine (Excel)")
@@ -113,6 +124,12 @@ class VideoAnalyzerUI(QWidget):
                 errors.append("Valeur d'images/min doit être > 0")
         except ValueError:
             errors.append("Images/min doit être un nombre")
+        try:
+            scale = float(self.scale_input.text())
+            if scale <= 0:
+                errors.append("L'échelle doit être positive")
+        except ValueError:
+            errors.append("L'échelle doit être un nombre")
 
         if errors:
             self.status_label.setText("Erreur : " + "; ".join(errors))
@@ -127,8 +144,14 @@ class VideoAnalyzerUI(QWidget):
 
         img_per_min = float(self.img_per_min_input.text())
         fps_video = img_per_min / 60
+        
+        scale_text = self.scale_input.text()
+        try:
+            scale = float(scale_text)
+        except ValueError:
+            scale = 1.0
 
-        results = analyse_video(self.file_path, fps_video)
+        results = analyse_video(self.file_path, fps_video, scale=scale)
         df = pd.DataFrame(results)
 
         output_path = f"assets/results/{self.name_result_input.text()}"
@@ -146,10 +169,3 @@ class VideoAnalyzerUI(QWidget):
 
         with pd.ExcelWriter(fichier_resultat, mode='a', engine='openpyxl') as writer:
             df_params.to_excel(writer, sheet_name='Paramètres machine', index=False)
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = VideoAnalyzerUI()
-    window.show()
-    sys.exit(app.exec())
