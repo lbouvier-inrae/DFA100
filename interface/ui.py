@@ -119,8 +119,8 @@ class VideoAnalyzerUI(QWidget):
         if not self.excel_path:
             errors.append("Fichier Excel non chargé")
         try:
-            val = float(self.img_per_min_input.text())
-            if val <= 0:
+            value = float(self.img_per_min_input.text())
+            if value <= 0:
                 errors.append("Valeur d'images/min doit être > 0")
         except ValueError:
             errors.append("Images/min doit être un nombre")
@@ -157,19 +157,23 @@ class VideoAnalyzerUI(QWidget):
         output_path = f"assets/results/{self.name_result_input.text()}"
         df.to_excel(output_path, index=False, sheet_name="Resultats")
         if self.excel_path:
-            self.ajouter_parametres_machine(output_path, self.excel_path)
+            self.add_machine_parameters(output_path, self.excel_path)
 
         self.status_label.setText("Analyse terminée")
 
-    def ajouter_parametres_machine(self, fichier_resultat, fichier_excel):
-        xls = pd.ExcelFile(fichier_excel)
+    def add_machine_parameters(self, results_file, excel_file):
+        xls = pd.ExcelFile(excel_file)
         last_sheet = xls.sheet_names[-1]
-        df_params = xls.parse(last_sheet)
+        df_parameters = xls.parse(last_sheet)
         
-        df_params = df_params.set_axis(['Configuration', 'Valeur'], axis=1)
+        df_parameters.columns = ['Configuration', 'Valeur']
         
         # Ajoute l'echelle dans la feuille de configuration
-        df_params = pd.concat([df_params, pd.DataFrame({'Configuration':['Echelle'], 'Valeur':[self.scale_input.text() + " px/cm"]})])
+        df_scale = pd.DataFrame({'Configuration':['Echelle'], 'Valeur':[self.scale_input.text() + ' [px/cm]']})
+        df_parameters = pd.concat([df_parameters, df_scale])
 
-        with pd.ExcelWriter(fichier_resultat, mode='a', engine='openpyxl') as writer:
-            df_params.to_excel(writer, sheet_name='Paramètres machine', index=False)
+        with pd.ExcelWriter(results_file, mode='a', engine='openpyxl') as writer:
+            df_parameters.to_excel(writer, sheet_name='Paramètres machine', index=False)
+    
+    def create_chart():
+        return
