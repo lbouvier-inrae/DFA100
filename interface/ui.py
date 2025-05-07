@@ -155,8 +155,7 @@ class VideoAnalyzerUI(QWidget):
         df = pd.DataFrame(results)
 
         output_path = f"assets/results/{self.name_result_input.text()}"
-        df.to_excel(output_path, index=False)
-
+        df.to_excel(output_path, index=False, sheet_name="Resultats")
         if self.excel_path:
             self.ajouter_parametres_machine(output_path, self.excel_path)
 
@@ -166,6 +165,11 @@ class VideoAnalyzerUI(QWidget):
         xls = pd.ExcelFile(fichier_excel)
         last_sheet = xls.sheet_names[-1]
         df_params = xls.parse(last_sheet)
+        
+        df_params = df_params.set_axis(['Configuration', 'Valeur'], axis=1)
+        
+        # Ajoute l'echelle dans la feuille de configuration
+        df_params = pd.concat([df_params, pd.DataFrame({'Configuration':['Echelle'], 'Valeur':[self.scale_input.text() + " px/cm"]})])
 
         with pd.ExcelWriter(fichier_resultat, mode='a', engine='openpyxl') as writer:
             df_params.to_excel(writer, sheet_name='Paramètres machine', index=False)
