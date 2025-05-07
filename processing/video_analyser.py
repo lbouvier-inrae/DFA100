@@ -37,7 +37,7 @@ def analyse_video(video_path: str, fps_results: float = 1.0, scale: float = 1.0)
         if frame_idx % frame_interval == 0:
             result = analyse_image(frame, scale=scale)
             time_sec = round(frame_idx / fps_video, 3)
-            result["temps"] = time_sec
+            result["temps[sec]"] = time_sec
             results.append(result)
 
         frame_idx += 1
