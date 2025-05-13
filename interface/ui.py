@@ -18,7 +18,6 @@ class VideoAnalyzerUI(QWidget):
         self.setWindowTitle("Analyseur de vidéo de bulles")
         self.setMinimumSize(600, 400)
         self.excel_path = None
-        self.file_path = None
 
         self.init_ui()
 
@@ -123,8 +122,8 @@ class VideoAnalyzerUI(QWidget):
 
     def validate_inputs(self):
         errors = []
-        if not self.file_path:
-            errors.append("Vidéo non chargée")
+        if len(self.videos_paths) == 0:
+            errors.append("Aucune vidéo chargée")
         if not self.name_experience_input.text().strip():
             errors.append("Nom de l'expérience manquant")
         if not self.name_result_input.text().strip().endswith(".xlsx"):
@@ -163,12 +162,16 @@ class VideoAnalyzerUI(QWidget):
             scale = float(scale_text)
         except ValueError:
             scale = 1.0
-
-        results = analyse_video(self.file_path, fps_video, scale=scale)
-        df = pd.DataFrame(results)
-
+        
+        data_frames = []
+        for video in self.videos_paths:
+            results = analyse_video(video, fps_video, scale=scale)
+            data_frames.append(pd.DataFrame(results))
+        
         output_path = f"assets/results/{self.name_result_input.text()}"
-        df.to_excel(output_path, index=False, sheet_name="Resultats")
+        with pd.ExcelWriter(output_path) as writer:
+            for i, df in enumerate(data_frames):
+                df.to_excel(writer, sheet_name=f"video{i}", index=False)
         if self.excel_path:
             self.add_machine_parameters(output_path, self.excel_path)
 
@@ -196,9 +199,11 @@ class VideoAnalyzerUI(QWidget):
         if file_path and file_path not in self.videos_paths:
             self.videos_paths.append(file_path)
             self.video_list.addItem(Path(file_path).name)
+            self.validate_inputs()
     
     def remove_selected_video(self):
         selected = self.video_list.currentRow()
         if selected >= 0:
             self.videos_paths.pop(selected)
             self.video_list.takeItem(selected)
+            self.validate_inputs()
