@@ -6,7 +6,7 @@ import pandas as pd
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel,
     QPushButton, QFileDialog, QLineEdit, QHBoxLayout,
-    QDateEdit
+    QDateEdit, QListWidget
 )
 from PySide6.QtCore import Qt, QDate
 from processing.video_analyser import analyse_video
@@ -23,12 +23,25 @@ class VideoAnalyzerUI(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        layout = QVBoxLayout()
-
-        # Bouton pour charger une vidéo
-        self.load_button = QPushButton("Charger une vidéo")
-        self.load_button.clicked.connect(self.load_video)
-        layout.addWidget(self.load_button)
+        layout = QVBoxLayout()        
+        
+        # Liste des videos
+        self.videos_paths = []
+        
+        self.video_list = QListWidget()
+        layout.addWidget(self.video_list)
+        
+        buttons_layout = QHBoxLayout()
+        self.add_video_button = QPushButton("Ajouter une vidéo")
+        self.add_video_button.clicked.connect(self.add_video)
+        buttons_layout.addWidget(self.add_video_button)
+        
+        self.remove_video_button = QPushButton("Supprimer la vidéo sélectionnée")
+        self.remove_video_button.clicked.connect(self.remove_selected_video)
+        buttons_layout.addWidget(self.remove_video_button)
+        
+        layout.addLayout(buttons_layout)
+        
 
         # Nom de l'expérience
         self.name_experience_input = QLineEdit()
@@ -177,3 +190,15 @@ class VideoAnalyzerUI(QWidget):
     
     def create_chart():
         return
+    
+    def add_video(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Choisir une vidéo", "", "Videos (*.avi *.mp4)")
+        if file_path and file_path not in self.videos_paths:
+            self.videos_paths.append(file_path)
+            self.video_list.addItem(Path(file_path).name)
+    
+    def remove_selected_video(self):
+        selected = self.video_list.currentRow()
+        if selected >= 0:
+            self.videos_paths.pop(selected)
+            self.video_list.takeItem(selected)
