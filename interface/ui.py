@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QDate
 from processing.video_analyser import analyse_video
+from processing.export_utils import generate_summary_sheet
 
 
 class VideoAnalyzerUI(QWidget):
@@ -167,17 +168,20 @@ class VideoAnalyzerUI(QWidget):
         for video in self.videos_paths:
             results = analyse_video(video, fps_video, scale=scale)
             data_frames.append(pd.DataFrame(results))
+            
+        summary_df = generate_summary_sheet(data_frames)
         
         output_path = f"assets/results/{self.name_result_input.text()}"
         with pd.ExcelWriter(output_path) as writer:
+            summary_df.to_excel(writer, sheet_name="Résumé", index=False)
             for i, df in enumerate(data_frames):
                 df.to_excel(writer, sheet_name=f"video{i}", index=False)
-        if self.excel_path:
-            self.add_machine_parameters(output_path, self.excel_path)
+            if self.excel_path:
+                self.add_machine_parameters(writer, self.excel_path)
 
         self.status_label.setText("Analyse terminée")
 
-    def add_machine_parameters(self, results_file, excel_file):
+    def add_machine_parameters(self, writer, excel_file):
         xls = pd.ExcelFile(excel_file)
         last_sheet = xls.sheet_names[-1]
         df_parameters = xls.parse(last_sheet)
@@ -188,8 +192,7 @@ class VideoAnalyzerUI(QWidget):
         df_scale = pd.DataFrame({'Configuration':['Echelle'], 'Valeur':[self.scale_input.text() + ' [px/cm]']})
         df_parameters = pd.concat([df_parameters, df_scale])
 
-        with pd.ExcelWriter(results_file, mode='a', engine='openpyxl') as writer:
-            df_parameters.to_excel(writer, sheet_name='Paramètres machine', index=False)
+        df_parameters.to_excel(writer, sheet_name='Paramètres machine', index=False)
     
     def create_chart():
         return
