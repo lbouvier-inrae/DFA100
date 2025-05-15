@@ -17,7 +17,7 @@ from processing.export_utils import (generate_summary_sheet, add_summary_chart)
 class VideoAnalyzerUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Analyseur de vidéo de bulles")
+        self.setWindowTitle("Bubble Video Analyzer")
         self.setMinimumSize(600, 400)
         self.excel_path = None
 
@@ -33,11 +33,11 @@ class VideoAnalyzerUI(QWidget):
         layout.addWidget(self.video_list)
         
         buttons_layout = QHBoxLayout()
-        self.add_video_button = QPushButton("Ajouter une vidéo")
+        self.add_video_button = QPushButton("Add a video")
         self.add_video_button.clicked.connect(self.add_video)
         buttons_layout.addWidget(self.add_video_button)
         
-        self.remove_video_button = QPushButton("Supprimer la vidéo sélectionnée")
+        self.remove_video_button = QPushButton("Remove selected video")
         self.remove_video_button.clicked.connect(self.remove_selected_video)
         buttons_layout.addWidget(self.remove_video_button)
         
@@ -46,10 +46,10 @@ class VideoAnalyzerUI(QWidget):
 
         # Nom de l'expérience
         self.name_experience_input = QLineEdit()
-        self.name_experience_input.setPlaceholderText("Nom de l'expérience")
+        self.name_experience_input.setPlaceholderText("Experiemnt name")
         self.name_experience_input.textChanged.connect(self.update_result_filename)
         self.name_experience_input.textChanged.connect(self.validate_inputs)
-        layout.addWidget(QLabel("Nom de l'expérience :"))
+        layout.addWidget(QLabel("Experiment name :"))
         layout.addWidget(self.name_experience_input)
 
         # Sélecteur de date
@@ -57,14 +57,14 @@ class VideoAnalyzerUI(QWidget):
         self.date_selector.setCalendarPopup(True)
         self.date_selector.dateChanged.connect(self.update_result_filename)
         self.date_selector.dateChanged.connect(self.validate_inputs)
-        layout.addWidget(QLabel("Date de l'expérience :"))
+        layout.addWidget(QLabel("Experiment date :"))
         layout.addWidget(self.date_selector)
         
         # Section pour définir l'échelle (pixels pour 1 cm)
         scale_box = QHBoxLayout()
-        self.scale_label = QLabel("Échelle (px/cm) :")
+        self.scale_label = QLabel("Scale (px/cm) :")
         self.scale_input = QLineEdit()
-        self.scale_input.setPlaceholderText("Ex: 50")
+        self.scale_input.setPlaceholderText("e.g., 50")
         self.scale_input.textChanged.connect(self.validate_inputs)
 
         scale_box.addWidget(self.scale_label)
@@ -72,26 +72,26 @@ class VideoAnalyzerUI(QWidget):
         layout.addLayout(scale_box)
 
         # Chargement des paramètres machine
-        self.excel_button = QPushButton("Charger les paramètres machine (Excel)")
+        self.excel_button = QPushButton("Load machine settings (Excel)")
         self.excel_button.clicked.connect(self.load_excel)
         layout.addWidget(self.excel_button)
 
         # Input pour les images analysées par minute
         self.img_per_min_input = QLineEdit()
-        self.img_per_min_input.setPlaceholderText("Exemple : 30")
+        self.img_per_min_input.setPlaceholderText("e.g., 30")
         self.img_per_min_input.textChanged.connect(self.validate_inputs)
-        layout.addWidget(QLabel("Images analysées par minute :"))
+        layout.addWidget(QLabel("Images analyzed per minute :"))
         layout.addWidget(self.img_per_min_input)
 
         # Nom du fichier résultat
         self.name_result_input = QLineEdit()
-        self.name_result_input.setPlaceholderText("Nom du fichier .xlsx")
+        self.name_result_input.setPlaceholderText("Output .xlsx file name")
         self.name_result_input.textChanged.connect(self.validate_inputs)
-        layout.addWidget(QLabel("Nom du fichier de résultat :"))
+        layout.addWidget(QLabel("Output file name :"))
         layout.addWidget(self.name_result_input)
 
         # Bouton d’analyse
-        self.analyze_button = QPushButton("Lancer l’analyse")
+        self.analyze_button = QPushButton("Start analysis")
         self.analyze_button.setEnabled(False)
         self.analyze_button.clicked.connect(self.analyze_video)
         layout.addWidget(self.analyze_button)
@@ -103,7 +103,7 @@ class VideoAnalyzerUI(QWidget):
         self.setLayout(layout)
 
     def load_excel(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Fichier Excel", "", "Excel Files (*.xlsx *.xls)")
+        path, _ = QFileDialog.getOpenFileName(self, "Excel File", "", "Excel Files (*.xlsx *.xls)")
         if path:
             self.excel_path = path
         self.validate_inputs()
@@ -117,33 +117,33 @@ class VideoAnalyzerUI(QWidget):
     def validate_inputs(self):
         errors = []
         if len(self.videos_paths) == 0:
-            errors.append("Aucune vidéo chargée")
+            errors.append("No video loaded")
         if not self.name_experience_input.text().strip():
-            errors.append("Nom de l'expérience manquant")
-        if not self.name_result_input.text().strip().endswith(".xlsx"):
-            errors.append("Nom de fichier de résultat invalide")
+            errors.append("Missing experiment name")
+        if not (self.name_result_input.text().strip().endswith(".xlsx") or self.name_result_input.text().strip().endswith(".xls")):
+            errors.append("Invalid output file name")
         try:
             value = float(self.img_per_min_input.text())
             if value <= 0:
-                errors.append("Valeur d'images/min doit être > 0")
+                errors.append("Images/min must be > 0")
         except ValueError:
-            errors.append("Images/min doit être un nombre")
+            errors.append("Images/min must be a number")
         try:
             scale = float(self.scale_input.text())
             if scale <= 0:
-                errors.append("L'échelle doit être positive")
+                errors.append("Scale must be > 0")
         except ValueError:
-            errors.append("L'échelle doit être un nombre")
+            errors.append("Scale must be a number")
 
         if errors:
-            self.status_label.setText("Erreur : " + "; ".join(errors))
+            self.status_label.setText("Error : " + "; ".join(errors))
             self.analyze_button.setEnabled(False)
         else:
-            self.status_label.setText("Prêt à analyser")
+            self.status_label.setText("Ready to analyze")
             self.analyze_button.setEnabled(True)
 
     def analyze_video(self):
-        self.status_label.setText("Analyse en cours...")
+        self.status_label.setText("Analyzing...")
         QApplication.processEvents()
 
         img_per_min = float(self.img_per_min_input.text())
@@ -171,23 +171,23 @@ class VideoAnalyzerUI(QWidget):
                 self.add_machine_parameters(writer, self.excel_path)
             add_summary_chart(writer.book)
 
-        self.status_label.setText("Analyse terminée")
+        self.status_label.setText("Analysis completed")
 
     def add_machine_parameters(self, writer, excel_file):
         xls = pd.ExcelFile(excel_file)
         last_sheet = xls.sheet_names[-1]
         df_parameters = xls.parse(last_sheet)
         
-        df_parameters.columns = ['Configuration', 'Valeur']
+        df_parameters.columns = ['Configuration', 'Value']
         
         # Ajoute l'echelle dans la feuille de configuration
-        df_scale = pd.DataFrame({'Configuration':['Echelle'], 'Valeur':[self.scale_input.text() + ' [px/cm]']})
+        df_scale = pd.DataFrame({'Configuration':['Echelle'], 'Value':[self.scale_input.text() + ' [px/cm]']})
         df_parameters = pd.concat([df_parameters, df_scale])
 
         df_parameters.to_excel(writer, sheet_name='Paramètres machine', index=False)
     
     def add_video(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Choisir une vidéo", "", "Videos (*.avi *.mp4)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Choose a video", "", "Videos (*.avi *.mp4)")
         if file_path and file_path not in self.videos_paths:
             self.videos_paths.append(file_path)
             
