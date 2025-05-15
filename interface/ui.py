@@ -1,6 +1,7 @@
 import sys
 import os
-from datetime import datetime
+import cv2
+import datetime
 from pathlib import Path
 import pandas as pd
 from PySide6.QtWidgets import (
@@ -101,14 +102,6 @@ class VideoAnalyzerUI(QWidget):
 
         self.setLayout(layout)
 
-    def load_video(self):
-        self.file_path, _ = QFileDialog.getOpenFileName(self, "Choisir une vidéo", "", "Vidéos (*.avi *.mp4)")
-        if self.file_path:
-            stat = os.stat(self.file_path)
-            self.date_selector.setDate(datetime.fromtimestamp(stat.st_mtime))
-            self.name_experience_input.setText(Path(self.file_path).stem)
-        self.validate_inputs()
-
     def load_excel(self):
         path, _ = QFileDialog.getOpenFileName(self, "Fichier Excel", "", "Excel Files (*.xlsx *.xls)")
         if path:
@@ -193,14 +186,20 @@ class VideoAnalyzerUI(QWidget):
 
         df_parameters.to_excel(writer, sheet_name='Paramètres machine', index=False)
     
-    def create_chart():
-        return
-    
     def add_video(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Choisir une vidéo", "", "Videos (*.avi *.mp4)")
         if file_path and file_path not in self.videos_paths:
             self.videos_paths.append(file_path)
-            self.video_list.addItem(Path(file_path).name)
+            
+            data = cv2.VideoCapture(file_path)
+            
+            frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
+            fps = data.get(cv2.CAP_PROP_FPS)
+            
+            seconds = round(frames / fps)
+            video_time = datetime.timedelta(seconds=seconds)
+            
+            self.video_list.addItem(Path(file_path).name + f"(video time: {video_time})")
             self.validate_inputs()
     
     def remove_selected_video(self):
