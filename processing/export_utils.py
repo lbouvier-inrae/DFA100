@@ -59,4 +59,4 @@ def add_summary_chart(workbook, worksheet_name="Résumé"):
     chart.add_data(data, titles_from_data=True)
     chart.set_categories(cats)
     
-    sheet.add_chart(chart, "E2")
+    sheet.add_chart(chart, "G2")
