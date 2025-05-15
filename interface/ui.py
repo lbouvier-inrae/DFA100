@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QDate
 from processing.video_analyser import analyse_video
-from processing.export_utils import generate_summary_sheet
+from processing.export_utils import (generate_summary_sheet, add_summary_chart)
 
 
 class VideoAnalyzerUI(QWidget):
@@ -129,8 +129,6 @@ class VideoAnalyzerUI(QWidget):
             errors.append("Nom de l'expérience manquant")
         if not self.name_result_input.text().strip().endswith(".xlsx"):
             errors.append("Nom de fichier de résultat invalide")
-        if not self.excel_path:
-            errors.append("Fichier Excel non chargé")
         try:
             value = float(self.img_per_min_input.text())
             if value <= 0:
@@ -175,9 +173,10 @@ class VideoAnalyzerUI(QWidget):
         with pd.ExcelWriter(output_path) as writer:
             summary_df.to_excel(writer, sheet_name="Résumé", index=False)
             for i, df in enumerate(data_frames):
-                df.to_excel(writer, sheet_name=f"video{i}", index=False)
+                df.to_excel(writer, sheet_name=f"video{i+1}", index=False)
             if self.excel_path:
                 self.add_machine_parameters(writer, self.excel_path)
+            add_summary_chart(writer.book)
 
         self.status_label.setText("Analyse terminée")
 

@@ -1,4 +1,6 @@
 import pandas as pd
+from openpyxl.chart import LineChart, Reference
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
     """
@@ -40,3 +42,21 @@ def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
         })
 
     return pd.DataFrame(summary_rows)
+
+def add_summary_chart(workbook, worksheet_name="Résumé"):
+    sheet = workbook[worksheet_name]
+    
+    max_row = sheet.max_row
+    max_col = sheet.max_column
+    
+    chart = LineChart()
+    chart.title = "Evolution du nombre de bulles"
+    chart.y_axis.title = "Nombre de bulles"
+    chart.x_axis.title = "Temps (s)"
+    
+    data = Reference(sheet, min_col=2, min_row=1, max_row=max_row)  # nb_bulles
+    cats = Reference(sheet, min_col=1, min_row=2, max_row=max_row)  # temps[sec]
+    chart.add_data(data, titles_from_data=True)
+    chart.set_categories(cats)
+    
+    sheet.add_chart(chart, "E2")
