@@ -21,7 +21,6 @@ class VideoAnalyzerUI(QWidget):
         self.setMinimumSize(600, 400)
 
         self.videos_data = {}
-        self.excel_path = None
 
         self.init_ui()
 
@@ -72,11 +71,6 @@ class VideoAnalyzerUI(QWidget):
         scale_box.addWidget(self.scale_input)
         layout.addLayout(scale_box)
 
-        # Chargement des paramètres machine
-        self.excel_button = QPushButton("Load machine settings (Excel)")
-        self.excel_button.clicked.connect(self.load_excel)
-        layout.addWidget(self.excel_button)
-
         # Input pour les images analysées par minute
         self.img_per_min_input = QLineEdit()
         self.img_per_min_input.setPlaceholderText("e.g., 30")
@@ -102,11 +96,6 @@ class VideoAnalyzerUI(QWidget):
         layout.addWidget(self.status_label)
 
         self.setLayout(layout)
-
-    def load_excel(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Excel File", "", "Excel Files (*.xlsx *.xls)")
-        if path:
-            self.excel_path = path
 
     def update_result_filename(self):
         name = self.name_experience_input.text().strip()
@@ -184,22 +173,10 @@ class VideoAnalyzerUI(QWidget):
                 if ordered_excels[i] is not None:
                     ordered_excels[i].to_excel(writer, sheet_name=f"video{i+1}_param", index=False)
 
-            if self.excel_path:
-                self.add_machine_parameters(writer, self.excel_path)
 
             add_summary_chart(writer.book)
 
         self.status_label.setText("Analysis completed")
-
-    def add_machine_parameters(self, writer, excel_file):
-        xls = pd.ExcelFile(excel_file)
-        last_sheet = xls.sheet_names[-1]
-        df_parameters = xls.parse(last_sheet)
-        
-        df_parameters.columns = ['Configuration', 'Value']
-        df_scale = pd.DataFrame({'Configuration': ['Echelle'], 'Value': [self.scale_input.text() + ' [px/cm]']})
-        df_parameters = pd.concat([df_parameters, df_scale])
-        df_parameters.to_excel(writer, sheet_name='Paramètres machine', index=False)
 
     def add_video(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Choose a video", "", "Videos (*.avi *.mp4)")
