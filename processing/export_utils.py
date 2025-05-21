@@ -59,4 +59,13 @@ def add_summary_chart(workbook, worksheet_name="Résumé"):
     chart.add_data(data, titles_from_data=True)
     chart.set_categories(cats)
     
+    chart.legend = None
+    
+    serie = chart.series[0]
+    serie.graphicalProperties.line.solidFill = "4472C4"
+    serie.marker.symbol = "circle"
+    serie.marker.size = 7
+    serie.marker.graphicalProperties.solidFill = "4472C4"  # Intérieur du marqueur
+    serie.marker.graphicalProperties.line.solidFill = "4472C4"  # Bordure du marqueur
+    
     sheet.add_chart(chart, "G2")
