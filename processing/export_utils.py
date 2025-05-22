@@ -20,7 +20,7 @@ def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
     grouped_data = {}
 
     for _, row in all_data.iterrows():
-        temps = int(round(row["temps[sec]"]))
+        temps = int(round(row["frame"]))
         if temps not in grouped_data:
             grouped_data[temps] = {
                 "nb_bulles": [],
@@ -35,7 +35,7 @@ def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
     summary_rows = []
     for temps, mesures in sorted(grouped_data.items()):
         summary_rows.append({
-            "temps[sec]": temps,
+            "frame": temps,
             "nb_bulles": sum(mesures["nb_bulles"]) / len(mesures["nb_bulles"]),
             "surface_moyenne[cm²]": sum(mesures["surface_moyenne[cm²]"]) / len(mesures["surface_moyenne[cm²]"]),
             "ecart_type[cm²]": sum(mesures["ecart_type[cm²]"]) / len(mesures["ecart_type[cm²]"]),
@@ -55,7 +55,7 @@ def add_summary_chart(workbook, worksheet_name="Résumé"):
     chart.x_axis.title = "Temps (s)"
     
     data = Reference(sheet, min_col=2, min_row=1, max_row=max_row)  # nb_bulles
-    cats = Reference(sheet, min_col=1, min_row=2, max_row=max_row)  # temps[sec]
+    cats = Reference(sheet, min_col=1, min_row=2, max_row=max_row)  # frame
     chart.add_data(data, titles_from_data=True)
     chart.set_categories(cats)
     

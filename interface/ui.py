@@ -7,7 +7,7 @@ import pandas as pd
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel,
     QPushButton, QFileDialog, QLineEdit, QHBoxLayout,
-    QDateEdit, QListWidget
+    QDateEdit, QListWidget, QSpinBox
 )
 from PySide6.QtCore import Qt, QDate
 from processing.video_analyser import analyse_video
@@ -71,12 +71,17 @@ class VideoAnalyzerUI(QWidget):
         scale_box.addWidget(self.scale_input)
         layout.addLayout(scale_box)
 
-        # Input pour les images analysées par minute
-        self.img_per_min_input = QLineEdit()
-        self.img_per_min_input.setPlaceholderText("e.g., 30")
-        self.img_per_min_input.textChanged.connect(self.validate_inputs)
-        layout.addWidget(QLabel("Images analyzed per minute :"))
-        layout.addWidget(self.img_per_min_input)
+        # Nouveau champ step
+        step_layout = QHBoxLayout()
+        self.step_label = QLabel("Step (1 = analyse every frame):")
+        self.step_input = QSpinBox()
+        self.step_input.setMinimum(1)
+        self.step_input.setValue(1)
+        self.step_input.valueChanged.connect(self.validate_inputs)
+
+        step_layout.addWidget(self.step_label)
+        step_layout.addWidget(self.step_input)
+        layout.addLayout(step_layout)
 
         # Nom du fichier résultat
         self.name_result_input = QLineEdit()
@@ -112,12 +117,6 @@ class VideoAnalyzerUI(QWidget):
         if not (self.name_result_input.text().strip().endswith(".xlsx") or self.name_result_input.text().strip().endswith(".xls")):
             errors.append("Invalid output file name")
         try:
-            value = float(self.img_per_min_input.text())
-            if value <= 0:
-                errors.append("Images/min must be > 0")
-        except ValueError:
-            errors.append("Images/min must be a number")
-        try:
             scale = float(self.scale_input.text())
             if scale <= 0:
                 errors.append("Scale must be > 0")
@@ -135,8 +134,7 @@ class VideoAnalyzerUI(QWidget):
         self.status_label.setText("Analyzing...")
         QApplication.processEvents()
 
-        img_per_min = float(self.img_per_min_input.text())
-        fps_video = img_per_min / 60
+        step = self.step_input.value()
 
         try:
             scale = float(self.scale_input.text())
@@ -147,7 +145,7 @@ class VideoAnalyzerUI(QWidget):
         ordered_excels = []
 
         for video_path, info in self.videos_data.items():
-            results = analyse_video(video_path, fps_video, scale=scale)
+            results = analyse_video(video_path, step=step, scale=scale)
             df = pd.DataFrame(results)
             data_frames.append(df)
 
