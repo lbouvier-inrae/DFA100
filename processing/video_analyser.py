@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Filename: video_analyser.py
+Author: Maxime Gosselin
+Description: This script analyzes a video
+Contact: maximeg391@gmail.com
+License: MIT License
+"""
 import os
 import cv2
 import numpy as np

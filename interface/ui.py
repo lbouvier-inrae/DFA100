@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Filename: ui.py
+Author: Maxime Gosselin
+Contact: maximeg391@gmail.com
+License: MIT License
+"""
 import sys
 import os
 import cv2

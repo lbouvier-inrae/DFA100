@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Filename: image_analyser.py
+Author: Maxime Gosselin
+Description: This script analyzes an image to provide a dictionary of results
+Contact: maximeg391@gmail.com
+License: MIT License
+"""
 import cv2
 import numpy as np
 from skimage.filters import threshold_otsu
