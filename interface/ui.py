@@ -12,12 +12,12 @@ import cv2
 import datetime
 from pathlib import Path
 import pandas as pd
-from PySide6.QtWidgets import (
+from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel,
     QPushButton, QFileDialog, QLineEdit, QHBoxLayout,
     QDateEdit, QListWidget, QSpinBox
 )
-from PySide6.QtCore import Qt, QDate
+from PyQt5.QtCore import Qt, QDate
 from processing.video_analyser import analyse_video
 from processing.export_utils import (generate_summary_sheet, add_summary_chart)
 

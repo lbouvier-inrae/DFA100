@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication
 from interface.ui import VideoAnalyzerUI
 import sys
 
