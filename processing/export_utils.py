@@ -1,6 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Filename: export_utils.py
+Author: Maxime Gosselin
+Contact: maximeg391@gmail.com
+License: MIT License
+"""
 import pandas as pd
+from openpyxl.chart.axis import ChartLines
 from openpyxl.chart import LineChart, Reference
-from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.chart.layout import Layout, ManualLayout
 
 def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
     """
@@ -45,27 +54,35 @@ def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
 
 def add_summary_chart(workbook, worksheet_name="Résumé"):
     sheet = workbook[worksheet_name]
-    
     max_row = sheet.max_row
-    max_col = sheet.max_column
-    
+
     chart = LineChart()
     chart.title = "Evolution du nombre de bulles"
+    chart.style = 2
     chart.y_axis.title = "Nombre de bulles"
-    chart.x_axis.title = "Temps (s)"
+    chart.x_axis.title = "Image"
     
-    data = Reference(sheet, min_col=2, min_row=1, max_row=max_row)  # nb_bulles
-    cats = Reference(sheet, min_col=1, min_row=2, max_row=max_row)  # frame
+    chart.y_axis.majorGridlines = ChartLines()
+    chart.x_axis.majorGridlines = None
+
+    data = Reference(sheet, min_col=2, min_row=1, max_row=max_row)
+    cats = Reference(sheet, min_col=1, min_row=2, max_row=max_row)
     chart.add_data(data, titles_from_data=True)
     chart.set_categories(cats)
-    
     chart.legend = None
-    
+
     serie = chart.series[0]
+    serie.smooth = True
     serie.graphicalProperties.line.solidFill = "4472C4"
-    serie.marker.symbol = "circle"
-    serie.marker.size = 7
-    serie.marker.graphicalProperties.solidFill = "4472C4"  # Intérieur du marqueur
-    serie.marker.graphicalProperties.line.solidFill = "4472C4"  # Bordure du marqueur
-    
+    serie.marker.symbol = "none"
+
+    chart.layout = Layout(
+        manualLayout=ManualLayout(
+            x=0.01,
+            y=0.02,
+            h=0.80,
+            w=0.85,
+        )
+    )
+
     sheet.add_chart(chart, "G2")
