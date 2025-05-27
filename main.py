@@ -1,9 +1,15 @@
 from PyQt5.QtWidgets import QApplication
-from interface.ui import VideoAnalyzerUI
 import sys
 
-if __name__ == "__main__":
+from controller.controller import VideoAnalyzerController
+from view.view import VideoAnalyzerUI
+
+def main():
     app = QApplication(sys.argv)
-    window = VideoAnalyzerUI()
-    window.show()
-    sys.exit(app.exec())
+    view = VideoAnalyzerUI()
+    controller = VideoAnalyzerController(view)
+    view.show()
+    sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
