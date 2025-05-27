@@ -14,7 +14,7 @@ from typing import List, Dict
 from processing.image_analyser import analyse_image
 
 
-def analyse_video(video_path: str, step: int = 1, scale: float = 1.0) -> List[Dict[str, float]]:
+def analyse_video(video_path: str, step: int = 1, scale: float = 1.0, agitation: int = 0) -> List[Dict[str, float]]:
     """
     Analyse une vidéo image par image à une fréquence donnée.
 
@@ -38,7 +38,7 @@ def analyse_video(video_path: str, step: int = 1, scale: float = 1.0) -> List[Di
         if not ret:
             break
 
-        if frame_idx % step == 0:
+        if frame_idx > agitation and frame_idx % step == 0:
             result = analyse_image(frame, scale=scale)
             result["frame"] = frame_idx
             results.append(result)

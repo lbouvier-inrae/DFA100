@@ -32,12 +32,12 @@ class VideoModel:
         if file_path in self.videos_data:
             self.videos_data[file_path]["excel"] = excel_path
 
-    def analyze_all(self, step, scale):
+    def analyze_all(self, step, scale, agitation):
         data_frames = []
         param_excels = []
 
         for video_path, info in self.videos_data.items():
-            results = analyse_video(video_path, step=step, scale=scale)
+            results = analyse_video(video_path, step=step, scale=scale, agitation=agitation)
             df = pd.DataFrame(results)
             data_frames.append(df)
 

@@ -77,6 +77,17 @@ class VideoAnalyzerUI(QWidget):
         self.step_input.setValue(1)
         layout.addWidget(step_label)
         layout.addWidget(self.step_input)
+        
+        # Agitation time input and label
+        agitation_layout = QHBoxLayout()
+        self.agitation_label = QLabel("Agitation (frames to ignore at start):")
+        self.agitation_input = QSpinBox()
+        self.agitation_input.setMinimum(0)
+        self.agitation_input.setValue(0)
+
+        agitation_layout.addWidget(self.agitation_label)
+        agitation_layout.addWidget(self.agitation_input)
+        layout.addLayout(agitation_layout)
 
         # Output filename label and input
         filename_label = QLabel("Output .xlsx file name")
@@ -131,7 +142,8 @@ class VideoAnalyzerUI(QWidget):
                 raise ValueError("Output filename must end with .xlsx")
 
             if self.on_analyze:
-                path = self.on_analyze(step, scale, filename)
+                agitation = self.agitation_input.value()
+                path = self.on_analyze(step, scale, filename, agitation)
                 self.status_label.setText(f"Saved to: {path}")
         except Exception as e:
             self.status_label.setText(f"Error: {str(e)}")

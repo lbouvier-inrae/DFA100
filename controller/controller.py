@@ -45,7 +45,7 @@ class VideoAnalyzerController:
             return f"{Path(keys[index]).name} (frames: {frames}) - file loaded"
         return None
 
-    def handle_analyze(self, step, scale, output_filename):
-        data_frames, param_excels = self.model.analyze_all(step, scale)
+    def handle_analyze(self, step, scale, output_filename, agitation):
+        data_frames, param_excels = self.model.analyze_all(step, scale, agitation)
         output_path = self.exporter.export_results(output_filename, data_frames, param_excels)
         return output_path
