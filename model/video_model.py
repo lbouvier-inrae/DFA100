@@ -108,11 +108,11 @@ class VideoModel:
                     df_param = xls.parse(last_sheet)
                     df_param.columns = ['Configuration', 'Value']
                     param_excels.append(df_param)
-                except Exception:
+                except Exception as e:
+                    print(e)
                     param_excels.append(None)
             else:
                 param_excels.append(None)
 
             data_frames.append(df)
-
         return data_frames, param_excels
