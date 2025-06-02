@@ -8,9 +8,12 @@ License: MIT License
 """
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog,
-    QLineEdit, QHBoxLayout, QDateEdit, QListWidget, QSpinBox
+    QLineEdit, QHBoxLayout, QDateEdit, QListWidget, QSpinBox,
+    QDialog
 )
-from PyQt5.QtCore import Qt, QDate
+from PyQt5.QtCore import QDate, QPoint, Qt
+from PyQt5.QtGui import QPixmap, QPainter, QPen
+import math
 
 class VideoAnalyzerUI(QWidget):
     def __init__(self):
@@ -69,11 +72,16 @@ class VideoAnalyzerUI(QWidget):
 
         # Scale input
         scale_layout = QHBoxLayout()
-        scale_label = QLabel("Scale (px/cm) :")
-        self.scale_input = QLineEdit()
-        self.scale_input.setPlaceholderText("e.g., 1000")
+        scale_label = QLabel("Scale (px/mm) :")
+        self.scale_display = QLineEdit()
+        self.scale_display.setReadOnly(True)
+        
+        self.select_scale_btn = QPushButton("Définir à partir d'une image")
+        self.select_scale_btn.clicked.connect(self.open_scale_selector)
+        
         scale_layout.addWidget(scale_label)
-        scale_layout.addWidget(self.scale_input)
+        scale_layout.addWidget(self.scale_display)
+        scale_layout.addWidget(self.select_scale_btn)
         layout.addLayout(scale_layout)
 
         # Step input
@@ -145,7 +153,7 @@ class VideoAnalyzerUI(QWidget):
 
     def start_analysis(self):
         try:
-            scale = float(self.scale_input.text())
+            scale = float(self.scale_display.text())
             step = self.step_input.value()
             agitation = self.agitation_input.value()
             filename = self.filename_input.text().strip()
@@ -157,3 +165,56 @@ class VideoAnalyzerUI(QWidget):
                 self.status_label.setText(f"Saved to: {path}")
         except Exception as e:
             self.status_label.setText(f"Error: {str(e)}")
+    
+    def open_scale_selector(self):
+        class ScaleDialog(QDialog):
+            def __init__(dialog_self):
+                super().__init__()
+                dialog_self.setWindowTitle("Cliquez sur deux points distants de 1 mm")
+
+                dialog_self.label = QLabel()
+                dialog_self.layout = QVBoxLayout()
+                dialog_self.layout.addWidget(dialog_self.label)
+                dialog_self.setLayout(dialog_self.layout)
+
+                file_path, _ = QFileDialog.getOpenFileName(self, "Choisir une image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
+                if not file_path:
+                    dialog_self.reject()
+                    return
+
+                dialog_self.pixmap = QPixmap(file_path)
+                dialog_self.original = dialog_self.pixmap.copy()
+                dialog_self.label.setPixmap(dialog_self.pixmap)
+                dialog_self.label.mousePressEvent = dialog_self.record_click
+
+                dialog_self.points = []
+
+            def record_click(dialog_self, event):
+                if len(dialog_self.points) < 2:
+                    pos = event.pos()
+                    dialog_self.points.append(QPoint(pos))
+
+                    pm = dialog_self.original.copy()
+                    painter = QPainter(pm)
+                    pen = QPen(Qt.red, 3)
+                    painter.setPen(pen)
+
+                    for pt in dialog_self.points:
+                        painter.drawEllipse(pt, 4, 4)
+
+                    if len(dialog_self.points) == 2:
+                        painter.drawLine(dialog_self.points[0], dialog_self.points[1])
+                    painter.end()
+
+                    dialog_self.label.setPixmap(pm)
+
+                    if len(dialog_self.points) == 2:
+                        dx = dialog_self.points[1].x() - dialog_self.points[0].x()
+                        dy = dialog_self.points[1].y() - dialog_self.points[0].y()
+                        px_distance = math.hypot(dx, dy)
+
+                        self.scale_display.setText(f"{px_distance:.2f}")  # px/mm
+                        dialog_self.accept()
+
+        dialog = ScaleDialog()
+        dialog.exec_()
