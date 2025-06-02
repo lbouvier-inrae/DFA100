@@ -57,8 +57,8 @@ def analyse_image(frame: np.ndarray, scale: float = 1.0) -> Dict[str, float]:
 
     return {
         "nb_bulles": nb_bulles,
-        "surface_moyenne[cm²]": moyenne,
-        "ecart_type[cm²]": ecart_type
+        "surface_moyenne[mm²]": moyenne,
+        "ecart_type[mm²]": ecart_type
     }
 
 

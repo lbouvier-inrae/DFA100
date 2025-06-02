@@ -32,20 +32,20 @@ def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
         if frame not in grouped_data:
             grouped_data[frame] = {
                 "nb_bulles": [],
-                "surface_moyenne[cm²]": [],
-                "ecart_type[cm²]": []
+                "surface_moyenne[mm²]": [],
+                "ecart_type[mm²]": []
             }
         grouped_data[frame]["nb_bulles"].append(row["nb_bulles"])
-        grouped_data[frame]["surface_moyenne[cm²]"].append(row["surface_moyenne[cm²]"])
-        grouped_data[frame]["ecart_type[cm²]"].append(row["ecart_type[cm²]"])
+        grouped_data[frame]["surface_moyenne[mm²]"].append(row["surface_moyenne[mm²]"])
+        grouped_data[frame]["ecart_type[mm²]"].append(row["ecart_type[mm²]"])
 
     summary_rows = []
     for frame, mesures in sorted(grouped_data.items()):
         summary_rows.append({
             "frame": frame,
             "nb_bulles": sum(mesures["nb_bulles"]) / len(mesures["nb_bulles"]),
-            "surface_moyenne[cm²]": sum(mesures["surface_moyenne[cm²]"]) / len(mesures["surface_moyenne[cm²]"]),
-            "ecart_type[cm²]": sum(mesures["ecart_type[cm²]"]) / len(mesures["ecart_type[cm²]"]),
+            "surface_moyenne[mm²]": sum(mesures["surface_moyenne[mm²]"]) / len(mesures["surface_moyenne[mm²]"]),
+            "ecart_type[mm²]": sum(mesures["ecart_type[mm²]"]) / len(mesures["ecart_type[mm²]"]),
         })
 
     return pd.DataFrame(summary_rows)
