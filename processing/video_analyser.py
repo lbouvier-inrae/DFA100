@@ -9,7 +9,6 @@ License: MIT License
 """
 import os
 import cv2
-import numpy as np
 from typing import List, Dict
 from processing.image_analyser import analyse_image
 
@@ -50,6 +49,6 @@ def analyse_video(video_path: str, step: int = 1, scale: float = 1.0, agitation:
 
 
 if __name__ == "__main__":
-    data = analyse_video("assets/test/video01.avi", fps_results=1.0)
+    data = analyse_video("assets/test/video.avi")
     for entry in data:
         print(entry)

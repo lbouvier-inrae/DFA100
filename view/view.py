@@ -74,7 +74,6 @@ class VideoAnalyzerUI(QWidget):
         scale_layout = QHBoxLayout()
         scale_label = QLabel("Scale (px/mm) :")
         self.scale_display = QLineEdit()
-        self.scale_display.setReadOnly(True)
         
         self.select_scale_btn = QPushButton("Définir à partir d'une image")
         self.select_scale_btn.clicked.connect(self.open_scale_selector)

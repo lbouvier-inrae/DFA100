@@ -105,24 +105,21 @@ def extract_relevant_excel_data(excel_path: str, important_frames: list[int]) ->
         pd.DataFrame: Merged DataFrame containing filtered data from both sheets.
     """
     xls = pd.ExcelFile(excel_path)
-
-    # Sheet 3: Height data
+    
     df3 = xls.parse(sheet_name="Hauteur - Données brutes")
-    cols3 = df3.iloc[:, [1, 2, 3]].copy()
-    cols3.columns = ["hmousse [mm]", "hliquide [mm]", "htotal [mm]"]
-
-    # Sheet 7: Structure data
     df7 = xls.parse(sheet_name="Structure - Données brutes")
-    cols7 = df7.iloc[:, [4, 7]].copy()
-    cols7.columns = ["Rmoy [µm]", "R32 [µm]"]
 
-    max_rows = min(len(cols3), len(cols7))
-    n_frames = len(important_frames)
-    max_valid = min(max_rows, n_frames)
+    # Récupération des colonnes utiles avec noms explicites
+    df3 = df3[["t [s]", "hmousse [mm]", "hliquide [mm]", "htotal [mm]"]]
+    df7 = df7[["Rmoy [µm]", "R32 [µm]"]]
 
-    filtered_cols3 = cols3.iloc[:max_valid].reset_index(drop=True)
-    filtered_cols3["frame"] = important_frames[:max_valid]
-    filtered_cols7 = cols7.iloc[:max_valid].reset_index(drop=True)
+    selected_df3 = df3.iloc[important_frames].reset_index(drop=True)
+    selected_df7 = df7.iloc[important_frames].reset_index(drop=True)
 
-    combined = pd.concat([filtered_cols3, filtered_cols7], axis=1)
-    return combined
+    # Création de la colonne 'frame'
+    selected_df3.insert(0, "frame", important_frames)
+
+    # Fusion finale
+    final_df = pd.concat([selected_df3, selected_df7], axis=1)
+
+    return final_df

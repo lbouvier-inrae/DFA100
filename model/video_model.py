@@ -10,7 +10,6 @@ License: MIT License
 
 import cv2
 import pandas as pd
-from pathlib import Path
 from processing.video_analyser import analyse_video
 from processing.export_utils import extract_relevant_excel_data
 
