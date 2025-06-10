@@ -12,6 +12,7 @@ import pandas as pd
 from openpyxl.chart.axis import ChartLines
 from openpyxl.chart import LineChart, Reference
 from openpyxl.chart.layout import Layout, ManualLayout
+from processing.settings_manager import load_settings
 
 
 def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
@@ -25,30 +26,26 @@ def generate_summary_sheet(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
         pd.DataFrame: Summary DataFrame with averaged values per frame.
     """
     all_data = pd.concat(data_frames, ignore_index=True)
-    grouped_data = {}
+    grouped = all_data.groupby("frame")
 
-    for _, row in all_data.iterrows():
-        frame = int(round(row["frame"]))
-        if frame not in grouped_data:
-            grouped_data[frame] = {
-                "nb_bulles": [],
-                "surface_moyenne[mm²]": [],
-                "ecart_type[mm²]": []
-            }
-        grouped_data[frame]["nb_bulles"].append(row["nb_bulles"])
-        grouped_data[frame]["surface_moyenne[mm²]"].append(row["surface_moyenne[mm²]"])
-        grouped_data[frame]["ecart_type[mm²]"].append(row["ecart_type[mm²]"])
+    # Colonnes par défaut
+    default_cols = ["nb_bulles", "surface_moyenne[mm²]", "ecart_type[mm²]"]
+    summary_dict = {"frame": []}
+    
+    for col in default_cols:
+        summary_dict[col] = []
 
-    summary_rows = []
-    for frame, mesures in sorted(grouped_data.items()):
-        summary_rows.append({
-            "frame": frame,
-            "nb_bulles": sum(mesures["nb_bulles"]) / len(mesures["nb_bulles"]),
-            "surface_moyenne[mm²]": sum(mesures["surface_moyenne[mm²]"]) / len(mesures["surface_moyenne[mm²]"]),
-            "ecart_type[mm²]": sum(mesures["ecart_type[mm²]"]) / len(mesures["ecart_type[mm²]"]),
-        })
+    # Colonnes supplémentaires (paramètres Excel)
+    extra_cols = [col for col in all_data.columns if col not in default_cols + ["frame"]]
+    for col in extra_cols:
+        summary_dict[col] = []
 
-    return pd.DataFrame(summary_rows)
+    for frame, group in grouped:
+        summary_dict["frame"].append(frame)
+        for col in default_cols + extra_cols:
+            summary_dict[col].append(group[col].mean())
+
+    return pd.DataFrame(summary_dict)
 
 
 def add_summary_chart(workbook, worksheet_name: str = "Résumé"):
@@ -104,22 +101,31 @@ def extract_relevant_excel_data(excel_path: str, important_frames: list[int]) ->
     Returns:
         pd.DataFrame: Merged DataFrame containing filtered data from both sheets.
     """
+    settings = load_settings()
+    selected_columns = settings.get("columns", {})
+
     xls = pd.ExcelFile(excel_path)
-    
-    df3 = xls.parse(sheet_name="Hauteur - Données brutes")
-    df7 = xls.parse(sheet_name="Structure - Données brutes")
+    final_frames_df = []
 
-    # Récupération des colonnes utiles avec noms explicites
-    df3 = df3[["t [s]", "hmousse [mm]", "hliquide [mm]", "htotal [mm]"]]
-    df7 = df7[["Rmoy [µm]", "R32 [µm]"]]
+    for sheet_name, columns in selected_columns.items():
+        if sheet_name not in xls.sheet_names:
+            continue
 
-    selected_df3 = df3.iloc[important_frames].reset_index(drop=True)
-    selected_df7 = df7.iloc[important_frames].reset_index(drop=True)
+        try:
+            df = xls.parse(sheet_name)
+            selected_df = df[columns].iloc[important_frames].reset_index(drop=True)
 
-    # Création de la colonne 'frame'
-    selected_df3.insert(0, "frame", important_frames)
+            # Ajouter la colonne "frame" uniquement sur la première feuille traitée
+            if not final_frames_df:
+                selected_df.insert(0, "frame", important_frames)
 
-    # Fusion finale
-    final_df = pd.concat([selected_df3, selected_df7], axis=1)
+            final_frames_df.append(selected_df)
 
+        except Exception as e:
+            print(f"Erreur lors du traitement de la feuille {sheet_name}: {e}")
+
+    if not final_frames_df:
+        raise ValueError("Aucune donnée extraite depuis le fichier Excel.")
+
+    final_df = pd.concat(final_frames_df, axis=1)
     return final_df

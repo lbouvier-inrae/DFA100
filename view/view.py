@@ -9,10 +9,11 @@ License: MIT License
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog,
     QLineEdit, QHBoxLayout, QDateEdit, QListWidget, QSpinBox,
-    QDialog
+    QDialog, QDialogButtonBox
 )
 from PyQt5.QtCore import QDate, QPoint, Qt
 from PyQt5.QtGui import QPixmap, QPainter, QPen
+from view.settings_view import SettingsWindow
 import math
 
 class VideoAnalyzerUI(QWidget):
@@ -121,7 +122,15 @@ class VideoAnalyzerUI(QWidget):
         self.status_label = QLabel()
         layout.addWidget(self.status_label)
 
-        self.setLayout(layout)
+        self.settings_btn = QPushButton("Parameters")
+        self.settings_btn.clicked.connect(self.open_settings)
+        layout.addWidget(self.settings_btn)
+
+        self.setLayout(layout)   
+        
+    def open_settings(self):
+        dialog = SettingsWindow(self)
+        dialog.exec_()
 
     def add_video(self):
         path, _ = QFileDialog.getOpenFileName(self, "Select Video", "", "Videos (*.avi *.mp4)")
@@ -213,7 +222,6 @@ class VideoAnalyzerUI(QWidget):
                         px_distance = math.hypot(dx, dy)
 
                         self.scale_display.setText(f"{px_distance:.2f}")  # px/mm
-                        dialog_self.accept()
 
         dialog = ScaleDialog()
         dialog.exec_()
