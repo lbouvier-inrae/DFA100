@@ -1,11 +1,12 @@
 # Ignorer le venv
 venv/
 
-# Ingnorer les données tests
-assets/test
-
 __pycache__
 
 build/
 dist/
 *.spec
+
+assets/
+results/
+settings.json
