@@ -9,12 +9,14 @@ License: MIT License
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog,
     QLineEdit, QHBoxLayout, QDateEdit, QListWidget, QSpinBox,
-    QDialog, QDialogButtonBox
+    QDialog, QMessageBox
 )
 from PyQt5.QtCore import QDate, QPoint, Qt
 from PyQt5.QtGui import QPixmap, QPainter, QPen
 from view.settings_view import SettingsWindow
 import math
+import os
+from datetime import datetime
 
 class VideoAnalyzerUI(QWidget):
     def __init__(self):
@@ -138,6 +140,41 @@ class VideoAnalyzerUI(QWidget):
             text = self.on_add_video(path)
             if text:
                 self.video_list.addItem(text)
+                
+                # Vérifie pour fichier Excel
+                video_time = self.get_file_modification_minute(path)
+                excel_file = self.find_matching_excel(path, video_time)
+                
+                if excel_file:
+                    reply = QMessageBox.question(
+                        self,
+                        "Excel file found",
+                        f"This file was found: \n{os.path.basename(excel_file)}\n"
+                        "Do you want to associate it with the video?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                    )
+                    if reply == QMessageBox.StandardButton.Yes and self.on_attach_excel:
+                        updated_text = self.on_attach_excel(self.video_list.count() - 1, excel_file)
+                        if updated_text:
+                            self.video_list.item(self.video_list.count() - 1).setText(updated_text)
+                            
+    def get_file_modification_minute(self, path):
+        timestamp = os.path.getmtime(path)
+        return datetime.fromtimestamp(timestamp).replace(second=0, microsecond=0)
+
+    def find_matching_excel(self, video_path, video_time):
+        directory = os.path.dirname(video_path)
+        for file in os.listdir(directory):
+            if file.lower().endswith(".xlsx"):
+                file_path = os.path.join(directory, file)
+                try:
+                    excel_time = datetime.fromtimestamp(os.path.getmtime(file_path)).replace(second=0, microsecond=0)
+                    if excel_time == video_time:
+                        return file_path
+                except Exception:
+                    continue
+        return None
+
 
     def remove_selected(self):
         row = self.video_list.currentRow()
