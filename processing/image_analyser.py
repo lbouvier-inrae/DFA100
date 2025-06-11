@@ -44,10 +44,13 @@ def analyse_image(frame: np.ndarray, scale: float = 1.0) -> Dict[str, float]:
     gray = convert_to_grayscale(frame)
     threshold = threshold_otsu(gray)
     
-    _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
+    _, thresh = cv2.threshold(gray, 1, 255, cv2.THRESH_BINARY)
+    
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     areas_px = [cv2.contourArea(c) for c in contours]
+    areas_px.pop(0)
+    
     scale_factor = (1 / (scale ** 2)) if scale > 0 else 1
     areas_cm = [a * scale_factor for a in areas_px]
 
@@ -60,9 +63,3 @@ def analyse_image(frame: np.ndarray, scale: float = 1.0) -> Dict[str, float]:
         "surface_moyenne[mm²]": moyenne,
         "ecart_type[mm²]": ecart_type
     }
-
-
-if __name__ == "__main__":
-    image = cv2.imread("assets/test/im_1.png")
-    result = analyse_image(image, 3)
-    print(result)
