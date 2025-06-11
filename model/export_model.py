@@ -40,7 +40,8 @@ class ExportModel:
         Returns:
             str: Path to the saved Excel file as a string.
         """
-        output_path = Path("assets/results") / output_filename
+        Path("results").mkdir(parents=True, exist_ok=True)
+        output_path = Path("results") / output_filename
         summary_df = generate_summary_sheet(data_frames)
 
         with pd.ExcelWriter(output_path) as writer:
