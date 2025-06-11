@@ -39,7 +39,6 @@ def analyse_video(video_path: str, step: int = 1, scale: float = 1.0, agitation:
 
         if frame_idx > agitation and frame_idx % step == 0:
             result = analyse_image(frame, scale=scale)
-            print(result)
             result["frame"] = frame_idx
             results.append(result)
 
